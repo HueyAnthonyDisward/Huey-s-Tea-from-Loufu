@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add, Update, and Delete Product</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin: 5px 0;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+        }
+        img {
+            display: block;
+            margin: 10px 0;
+            width: 100px;
+            height: 100px;
+        }
+    </style>
+</head>
+<body>
+<h1>Product Management</h1>
+
+<label>Select Action:</label>
+<select id="actionSelect" required>
+    <option value="">--Select an action--</option>
+    <option value="add">Add Product</option>
+    <option value="update">Update Product</option>
+    <option value="delete">Delete Product</option>
+</select>
+
+<!-- Add Product Form -->
+<div id="addProductForm" style="display: none;">
+    <h2>Add Product</h2>
+    <form id="addForm" enctype="multipart/form-data">
+        <label>Product Name:</label>
+        <input type="text" id="productName" name="productName" required>
+
+        <label>Description:</label>
+        <input type="text" id="description" name="description" required>
+
+        <label>Price:</label>
+        <input type="number" id="price" name="price" required>
+
+        <label>Stock:</label>
+        <input type="number" id="stock" name="stock" required>
+
+        <label>Image:</label>
+        <input type="file" id="file" name="file" accept="image/*" required>
+
+        <button type="submit">Add Product</button>
+    </form>
+</div>
+
+<!-- Update Product Form -->
+<div id="updateProductForm" style="display: none;">
+    <h2>Update Product</h2>
+    <form id="updateForm" enctype="multipart/form-data">
+        <label>Select Product:</label>
+        <select id="updateProductSelect" name="productId" required>
+            <option value="">--Select a product--</option>
+        </select>
+
+        <label>Product Name:</label>
+        <input type="text" id="updateProductName" name="productName" required>
+
+        <label>Description:</label>
+        <input type="text" id="updateDescription" name="description" required>
+
+        <label>Price:</label>
+        <input type="number" id="updatePrice" name="price" required>
+
+        <label>Stock:</label>
+        <input type="number" id="updateStock" name="stock" required>
+
+        <label>Current Image:</label>
+        <img id="currentImage" src="" alt="Product Image" style="display: none;">
+
+        <label>New Image:</label>
+        <input type="file" id="updateImage" name="image" accept="image/*">
+
+        <button type="submit">Update Product</button>
+    </form>
+</div>
+
+<!-- Delete Product Form -->
+<div id="deleteProductForm" style="display: none;">
+    <h2>Delete Product</h2>
+    <label>Select Product:</label>
+    <select id="productSelect" name="productId" required>
+        <option value="">--Select a product--</option>
+    </select>
+
+    <label>ID:</label>
+    <input type="text" id="productId" name="productId" readonly>
+
+    <label>Product Name:</label>
+    <input type="text" id="deleteProductName" name="deleteProductName" readonly>
+
+    <label>Price:</label>
+    <input type="number" id="deletePrice" name="deletePrice" readonly>
+
+    <label>Stock:</label>
+    <input type="number" id="deleteStock" name="deleteStock" readonly>
+
+    <button type="button" id="deleteProductButton">Delete Product</button>
+</div>
+
+<script>
+    function populateProductOptions() {
+        fetch('http://localhost:8080/products')
+            .then(response => response.json())
+            .then(data => {
+                const productSelect = document.getElementById('productSelect');
+                const updateProductSelect = document.getElementById('updateProductSelect');
+                productSelect.innerHTML = '<option value="">--Select a product--</option>';
+                updateProductSelect.innerHTML = '<option value="">--Select a product--</option>';
+
+                data.forEach(product => {
+                    const option = document.createElement('option');
+                    option.value = product.productID;
+                    option.textContent = product.productName;
+                    productSelect.appendChild(option);
+                    updateProductSelect.appendChild(option.cloneNode(true));
+                });
+            })
+            .catch(error => console.error('Error fetching products:', error));
+    }
+
+    window.onload = function() {
+        populateProductOptions();
+
+        document.getElementById('actionSelect').onchange = function() {
+            const selectedAction = this.value;
+            document.getElementById('addProductForm').style.display = selectedAction === 'add' ? 'block' : 'none';
+            document.getElementById('updateProductForm').style.display = selectedAction === 'update' ? 'block' : 'none';
+            document.getElementById('deleteProductForm').style.display = selectedAction === 'delete' ? 'block' : 'none';
+        };
+
+        // Handle Add Product Form
+        document.getElementById('addForm').onsubmit = function(event) {
+            event.preventDefault(); // Ngăn chặn hành động gửi form mặc định
+            const formData = new FormData(this); // Lấy dữ liệu từ form
+
+            fetch('http://localhost:8080/products/upload', {
+                method: 'POST',
+                body: formData,
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error during product addition');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    alert('Product added successfully');
+                    populateProductOptions(); // Cập nhật danh sách sản phẩm
+                    this.reset(); // Đặt lại form
+                })
+                .catch(error => {
+                    console.error('Error adding product:', error);
+                    alert('Error adding product: ' + error.message);
+                });
+        };
+
+
+        // Handle Update Product Form
+        document.getElementById('updateProductSelect').onchange = function() {
+            const productId = this.value;
+            if (productId) {
+                fetch(`http://localhost:8080/products/${productId}`)
+                    .then(response => response.json())
+                    .then(product => {
+                        document.getElementById('updateProductName').value = product.productName;
+                        document.getElementById('updateDescription').value = product.description;
+                        document.getElementById('updatePrice').value = product.price;
+                        document.getElementById('updateStock').value = product.stock;
+                        document.getElementById('currentImage').src = product.imageUrl || '';
+                        document.getElementById('currentImage').style.display = product.imageUrl ? 'block' : 'none';
+                    })
+                    .catch(error => console.error('Error fetching product:', error));
+            }
+        };
+
+        document.getElementById('updateForm').onsubmit = function(event) {
+            event.preventDefault();
+            const productId = document.getElementById('updateProductSelect').value;
+            const formData = new FormData(this);
+
+            fetch(`http://localhost:8080/products/${productId}`, {
+                method: 'PUT',
+                body: formData,
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error during product update');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    alert('Product updated successfully');
+                    populateProductOptions();
+                })
+                .catch(error => {
+                    console.error('Error updating product:', error);
+                    alert('Error updating product: ' + error.message);
+                });
+        };
+
+        // Handle Delete Product
+        document.getElementById('productSelect').onchange = function() {
+            const productId = this.value;
+            if (productId) {
+                fetch(`http://localhost:8080/products/${productId}`)
+                    .then(response => response.json())
+                    .then(product => {
+                        document.getElementById('productId').value = product.productID;
+                        document.getElementById('deleteProductName').value = product.productName;
+                        document.getElementById('deletePrice').value = product.price;
+                        document.getElementById('deleteStock').value = product.stock;
+                    })
+                    .catch(error => console.error('Error fetching product:', error));
+            }
+        };
+
+        document.getElementById('deleteProductButton').onclick = function() {
+            const productId = document.getElementById('productId').value;
+            if (productId) {
+                fetch(`http://localhost:8080/products/${productId}`, {
+                    method: 'DELETE'
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Error during product deletion');
+                        }
+                        alert('Product deleted successfully');
+                        populateProductOptions();
+                    })
+                    .catch(error => {
+                        console.error('Error deleting product:', error);
+                        alert('Error deleting product: ' + error.message);
+                    });
+            } else {
+                alert('Please select a product to delete');
+            }
+        };
+    };
+</script>
+</body>
+</html>

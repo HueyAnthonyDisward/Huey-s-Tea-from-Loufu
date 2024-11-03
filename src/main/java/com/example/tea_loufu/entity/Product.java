@@ -1,39 +1,32 @@
 package com.example.tea_loufu.entity;
 
-// Import các thư viện cần thiết cho JPA
 import jakarta.persistence.*;
-import java.math.BigDecimal; // Sử dụng BigDecimal để xử lý số thập phân chính xác, phù hợp với giá tiền.
-import java.time.LocalDateTime; // Sử dụng LocalDateTime để xử lý các thông tin liên quan đến thời gian.
+import java.math.BigDecimal;
 
-@Entity // Đánh dấu lớp này là một thực thể (entity) ánh xạ tới bảng trong cơ sở dữ liệu.
-@Table(name = "Product") // Tên bảng trong cơ sở dữ liệu sẽ là "Product".
+@Entity
+@Table(name = "Product")
 public class Product {
 
-    @Id // Đánh dấu ProductID là khóa chính (primary key) của bảng Product.
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Khóa chính sẽ tự động tăng giá trị (auto_increment).
-    private int productID; // Khóa chính của bảng Product.
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int productID;
 
-    @Column(nullable = false, length = 100) // Thuộc tính ProductName không thể null và giới hạn độ dài tối đa là 100 ký tự.
-    private String productName; // Tên của sản phẩm.
+    @Column(name = "product_name", nullable = false, length = 100)
+    private String productName;
 
-    @Column(columnDefinition = "TEXT") // Cột này lưu trữ nội dung dạng TEXT cho mô tả sản phẩm.
-    private String description; // Mô tả chi tiết về sản phẩm.
+    @Column(name = "description", columnDefinition = "TEXT")
+    private String description;
 
-    @Column(nullable = false, precision = 10, scale = 2) // Thuộc tính price có độ chính xác cao với 10 số và 2 chữ số thập phân.
-    private BigDecimal price; // Giá sản phẩm.
+    @Column(name = "price", nullable = false, precision = 10, scale = 2)
+    private BigDecimal price;
 
-    @Column(nullable = false) // Thuộc tính stock không thể null.
-    private int stock; // Số lượng tồn kho của sản phẩm.
+    @Column(name = "stock", nullable = false)
+    private int stock;
 
-    @Column(nullable = false, updatable = false, insertable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    // Thời điểm tạo sản phẩm được tự động thêm vào lúc sản phẩm được tạo (DEFAULT CURRENT_TIMESTAMP), không cho phép chỉnh sửa sau khi tạo.
-    private LocalDateTime createdAt; // Ngày giờ sản phẩm được tạo.
+    @Column(name = "image_url", length = 4096)  // Đổi tên từ image_data thành image_url
+    private String imageUrl;
 
-    @Lob // Đánh dấu thuộc tính imageData là kiểu LOB (Large Object Binary), dùng để lưu trữ dữ liệu lớn như hình ảnh.
-    @Column(name = "image_data", columnDefinition = "LONGBLOB") // Cột này lưu trữ ảnh dưới dạng LONGBLOB trong MySQL.
-    private byte[] imageData; // Dữ liệu ảnh của sản phẩm (lưu dưới dạng mảng byte).
-
-    // Phương thức getter và setter - để truy cập và thay đổi giá trị của các thuộc tính.
+    // Getters and Setters
 
     public int getProductID() {
         return productID;
@@ -75,17 +68,11 @@ public class Product {
         this.stock = stock;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    public String getImageUrl() {  // Cập nhật getter
+        return imageUrl;
     }
 
-    // Không cần setter cho createdAt vì giá trị này được tự động tạo và không thể thay đổi.
-
-    public byte[] getImageData() {
-        return imageData;
-    }
-
-    public void setImageData(byte[] imageData) {
-        this.imageData = imageData;
+    public void setImageUrl(String imageUrl) {  // Cập nhật setter
+        this.imageUrl = imageUrl;
     }
 }

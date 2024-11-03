@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.stereotype.Controller;
 
 @SpringBootApplication
-@Controller // Thay đổi từ @RestController sang @Controller
+@Controller
 public class TeaLoufuApplication {
 
 	public static void main(String[] args) {
@@ -17,7 +17,7 @@ public class TeaLoufuApplication {
 	@GetMapping("/")
 	public String home(Model model) {
 		model.addAttribute("message", "Welcome to Tea Loufu!");
-		return "addProduct"; // Trả về file index.html
+		return "CRUDProduct"; // Trả về file index.html
 	}
 
 
